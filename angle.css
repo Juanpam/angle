@@ -1,0 +1,25 @@
+body, html {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: grid;
+    grid-template-rows: auto;
+    justify-items: center;
+    align-items: center;
+}
+
+#angle {
+    height: 80vh;
+    width: 80vw;
+    display: block;
+    border: 1px solid black;
+}
+
+h1 {
+    /* text-decoration: line-through; */
+    font-family: 'Roboto', sans-serif;
+}
