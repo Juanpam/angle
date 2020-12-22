@@ -1,25 +1,14 @@
-body, html {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-}
-
 body {
-    display: grid;
-    grid-template-rows: auto;
-    justify-items: center;
-    align-items: center;
+    overflow: hidden;
 }
 
-#angle {
-    height: 80vh;
-    width: 80vw;
-    display: block;
-    border: 1px solid black;
-}
-
-h1 {
-    /* text-decoration: line-through; */
+footer {
     font-family: 'Roboto', sans-serif;
+    z-index: 10;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    text-align: center;
 }

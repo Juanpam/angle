@@ -1,6 +1,10 @@
 window.onload = function () {
     let canvas = document.getElementById("angle");
     let ctx = canvas.getContext("2d");
+    let drawIntervalID;
+
+    // Comment this line to active logging again
+    console.log = () => {};
 
     function draw() {
         // Initializing
@@ -9,50 +13,72 @@ window.onload = function () {
         let side = 20;
         let dside = 10;
         let triangleHeight = Math.round(side * (Math.sqrt(3)/2));
-        console.log(`Canvas width: ${canvas.width} height: ${canvas.height}`);
+        // console.log(`Canvas width: ${canvas.width} height: ${canvas.height}`);
         console.log(`Center x: ${center.x} y: ${center.y}`);
 
         let position = {
             x: center.x,
-            y: center.y - triangleHeight
+            y: center.y - triangleHeight,
+            color: 0
         };
         let direction = 0;
 
-        ctx.moveTo(position.x, position.y);
+        
         let drawnLines = 0;
         let linesToDraw = 100;
         let vertices = [];
         while (checkIfCanvasOutsideTriangle(vertices) && drawnLines < linesToDraw) {
-            // console.log('Drawing', position);
-            // ctx.lineTo(position.x, position.y);
             vertices.push(position);
             position = calcNextVertex(position, direction, side);
             direction = (direction + 1) % 3;
             side += dside;
-            // drawnLines++;
         }
 
         console.log('Got out of the loop');
         console.log('Vertices', vertices);
         let points = getAllPoints(vertices);
-        console.log('points', points)
-
-        // points.forEach(p => ctx.lineTo(p.x, p.y));
-
-        drawSlow(vertices);
+        // console.log('points', points)
+        drawSlow(points);
+        // ctx.beginPath();
+        // vertices.forEach(v => ctx.lineTo(v.x, v.y));
+        // ctx.stroke();
     }
 
     function drawSlow(points) {
         let index = 0;
-        let intervalID = setInterval(() => {
+        let pointsPerIteration = 15;
+        let initialPoint;
+        drawIntervalID = setInterval(() => {
             if(index < points.length) {
-                ctx.lineTo(points[index].x, points[index].y);
-                index++;
+                console.log('Index', index);
+                if(index === 0) {
+                    initialPoint = points[index];
+                }
+                let i;
+                for (i = 0; i <= pointsPerIteration && index + i < points.length; i++) {
+                    if(i === 0) {
+                        ctx.beginPath();
+                        console.log('Starting draw with initialPoint', initialPoint);
+                        ctx.moveTo(initialPoint.x, initialPoint.y);
+                        ctx.strokeStyle = `#${initialPoint.color.toString(16)}`;
+                    } else {
+                        console.log('i',i);
+                        console.log('Drawing to ', points[index+i].x,points[index+i].y);
+                        ctx.lineTo(points[index+i].x,points[index+i].y);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(points[index+i].x,points[index+i].y)
+                        ctx.strokeStyle = `#${points[index+i].color.toString(16)}`;
+                    }
+                }
+                initialPoint = points[index+i-1];
+                console.log('New initial point', initialPoint);
+                index += pointsPerIteration;
             } else {
-                clearInterval(intervalID);
+                console.log('Finished');
+                clearInterval(drawIntervalID);
             }
-            ctx.stroke();
-        }, 1000 / 10);
+        }, 1000/60);
     }
 
     function getAllPoints(vertices) {
@@ -69,15 +95,17 @@ window.onload = function () {
     }
 
 
-    function calcWayPoints(v1, v2, maxWaypoints = 10) {
+    function calcWayPoints(v1, v2, maxWaypoints = 30) {
         let wayPoints = [];
         let dx = v2.x - v1.x;
         let dy = v2.y - v1.y;
+        let dcolor = v2.color - v1.color;
         for(let index = 0; index < maxWaypoints; index++) {
             // console.log('Calculing waypoints');
             wayPoints.push({
                 x: v1.x + (dx*index/maxWaypoints),
                 y: v1.y + (dy*index/maxWaypoints),
+                color: v1.color + (dcolor*index/maxWaypoints)
             })
         }
         return wayPoints;
@@ -160,28 +188,31 @@ window.onload = function () {
     }
 
     function calcNextVertex(position, direction, side) {
+        let dcolor = 60;
         let change = [
-            { dx: -Math.cos(degreesToRadians(60)), dy: Math.sin(degreesToRadians(60)) },
-            { dx: 1, dy: 0 },
-            { dx: -Math.cos(degreesToRadians(60)), dy: -Math.sin(degreesToRadians(60)) }
+            { dx: -Math.cos(degreesToRadians(60)), dy: Math.sin(degreesToRadians(60)), dcolor },
+            { dx: 1, dy: 0, dcolor },
+            { dx: -Math.cos(degreesToRadians(60)), dy: -Math.sin(degreesToRadians(60)), dcolor }
         ];
 
         let newPosition = {
-            x: position.x + (change[direction].dx * side),
-            y: position.y + (change[direction].dy * side)
+            x: Math.round(position.x + (change[direction].dx * side)),
+            y: Math.round(position.y + (change[direction].dy * side)),
+            color: position.color + change[direction].dcolor
         };
 
         return newPosition;
     }
 
     function fixResize() {
-        canvas.width = canvas.getBoundingClientRect().width;
-        canvas.height = canvas.getBoundingClientRect().height;
+        const width = canvas.width = window.innerWidth;
+        const height = canvas.height = window.innerHeight;
     }
 
     draw();
 
     window.onresize = function() {
+        clearInterval(drawIntervalID);
         draw();
     }
 
