@@ -232,8 +232,9 @@ window.onload = function () {
     }
 
     function fixResize() {
-        const width = originalCanvas.width = canvas.width = tempCanvas.width = window.innerWidth * 1.07;
-        const height = originalCanvas.height = canvas.height = tempCanvas.height = window.innerWidth * 1.07;
+        let size = Math.max(window.innerHeight, window.innerWidth) * 1.07;
+        const width = originalCanvas.width = canvas.width = tempCanvas.width = size;
+        const height = originalCanvas.height = canvas.height = tempCanvas.height = size;
     }
 
     function drawOnScreen(canvasToDraw) {
