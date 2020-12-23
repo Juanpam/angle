@@ -12,7 +12,7 @@ window.onload = function () {
     tempCanvas.height = canvas.height;
 
     // Comment this line to active logging again
-    console.log = () => {};
+    // console.log = () => {};
 
     function draw() {
         // Initializing
@@ -66,6 +66,7 @@ window.onload = function () {
         let initialPoint;
         let rotationPoint;
         let dangle = 5 * (2/3);
+        // dangle = 0;
         let speed = (1000 / 60) * 1;
         drawIntervalID = setInterval(() => {
             if(index < points.length) {
@@ -232,14 +233,25 @@ window.onload = function () {
     }
 
     function fixResize() {
-        let size = Math.max(window.innerHeight, window.innerWidth) * 1.07;
-        const width = originalCanvas.width = canvas.width = tempCanvas.width = size;
-        const height = originalCanvas.height = canvas.height = tempCanvas.height = size;
+        let size = Math.max(window.innerHeight, window.innerWidth) * 1.08;
+        canvas.width = tempCanvas.width = size;
+        canvas.height = tempCanvas.height = size;
+        const width = originalCanvas.width = window.innerWidth;
+        const height = originalCanvas.height = window.innerHeight;
     }
 
     function drawOnScreen(canvasToDraw) {
+        let originalCanvasCenter = {
+            x: originalCanvas.width / 2,
+            y: originalCanvas.height / 2
+        };
+
+        let canvasToDrawCenter = {
+            x: canvasToDraw.width / 2,
+            y: canvasToDraw.height / 2
+        }
         originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
-        originalCtx.drawImage(canvasToDraw, 0, 0);
+        originalCtx.drawImage(canvasToDraw, -(canvasToDrawCenter.x - originalCanvasCenter.x), -(canvasToDrawCenter.y - originalCanvasCenter.y));
     }
 
     function rotate(rotationPoint, dangle) {
