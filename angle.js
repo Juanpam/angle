@@ -1,7 +1,15 @@
 window.onload = function () {
-    let canvas = document.getElementById("angle");
+    let originalCanvas = document.getElementById("angle");
+    let originalCtx = originalCanvas.getContext("2d");
+
+    let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d");
-    let drawIntervalID;
+
+    let tempCanvas = document.createElement('canvas'),
+    tempCtx = tempCanvas.getContext('2d');
+
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
 
     // Comment this line to active logging again
     console.log = () => {};
@@ -11,7 +19,7 @@ window.onload = function () {
         fixResize();
         let center = { x: Math.floor(canvas.width / 2), y: Math.floor(canvas.height / 2) };
         let side = 20;
-        let dside = 10;
+        let dside = 30;
         let triangleHeight = Math.round(side * (Math.sqrt(3)/2));
         // console.log(`Canvas width: ${canvas.width} height: ${canvas.height}`);
         console.log(`Center x: ${center.x} y: ${center.y}`);
@@ -32,6 +40,7 @@ window.onload = function () {
             position = calcNextVertex(position, direction, side);
             direction = (direction + 1) % 3;
             side += dside;
+            // dside *= 1.0075;
         }
 
         console.log('Got out of the loop');
@@ -39,6 +48,13 @@ window.onload = function () {
         let points = getAllPoints(vertices);
         // console.log('points', points)
         drawSlow(points);
+        // points.forEach(p => {
+        //     ctx.lineTo(p.x, p.y);
+        // });
+        // ctx.stroke();
+        // ctx.fillRect(center.x, center.y, 20, 20);
+        // setTimeout(rotate, 1000)
+        // rotate();
         // ctx.beginPath();
         // vertices.forEach(v => ctx.lineTo(v.x, v.y));
         // ctx.stroke();
@@ -46,13 +62,16 @@ window.onload = function () {
 
     function drawSlow(points) {
         let index = 0;
-        let pointsPerIteration = 15;
+        let pointsPerIteration = Math.round(10 * (2/3));
         let initialPoint;
+        let rotationPoint;
+        let dangle = 5 * (2/3);
+        let speed = (1000 / 60) * 1;
         drawIntervalID = setInterval(() => {
             if(index < points.length) {
                 console.log('Index', index);
                 if(index === 0) {
-                    initialPoint = points[index];
+                    initialPoint = rotationPoint = points[index];
                 }
                 let i;
                 for (i = 0; i <= pointsPerIteration && index + i < points.length; i++) {
@@ -73,12 +92,20 @@ window.onload = function () {
                 }
                 initialPoint = points[index+i-1];
                 console.log('New initial point', initialPoint);
+                // rotate(rotationPoint, 10);
+                drawOnScreen(rotate(rotationPoint, dangle));
                 index += pointsPerIteration;
             } else {
                 console.log('Finished');
+                // rotate(rotationPoint, 180);
+                setInterval(() => {
+                    drawOnScreen(rotate(rotationPoint, dangle));
+
+                }, speed);
+                // drawOnScreen(canvas);
                 clearInterval(drawIntervalID);
             }
-        }, 1000/60);
+        }, speed);
     }
 
     function getAllPoints(vertices) {
@@ -95,7 +122,7 @@ window.onload = function () {
     }
 
 
-    function calcWayPoints(v1, v2, maxWaypoints = 30) {
+    function calcWayPoints(v1, v2, maxWaypoints = 100) {
         let wayPoints = [];
         let dx = v2.x - v1.x;
         let dy = v2.y - v1.y;
@@ -205,8 +232,26 @@ window.onload = function () {
     }
 
     function fixResize() {
-        const width = canvas.width = window.innerWidth;
-        const height = canvas.height = window.innerHeight;
+        const width = originalCanvas.width = canvas.width = tempCanvas.width = window.innerWidth * 1.07;
+        const height = originalCanvas.height = canvas.height = tempCanvas.height = window.innerWidth * 1.07;
+    }
+
+    function drawOnScreen(canvasToDraw) {
+        originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
+        originalCtx.drawImage(canvasToDraw, 0, 0);
+    }
+
+    function rotate(rotationPoint, dangle) {
+        tempCtx.fillStyle = "white"
+        tempCtx.clearRect(0,0,tempCanvas.width, tempCanvas.height)
+        // tempCtx.fillRect(0,0,tempCanvas.width, tempCanvas.height);
+
+        tempCtx.translate(rotationPoint.x, rotationPoint.y);
+        tempCtx.rotate(degreesToRadians(dangle));
+        tempCtx.translate(-rotationPoint.x, -rotationPoint.y);
+
+        tempCtx.drawImage(canvas, 0, 0);
+        return tempCanvas;
     }
 
     draw();
